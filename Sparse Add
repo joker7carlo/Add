@@ -1,0 +1,108 @@
+#include <stdio.h>           // For input/output functions
+#define MAX 50               // Define maximum number of non-zero elements + 1
+
+// Function to read a sparse matrix from user
+void readSparse(int M[MAX][3]) {
+    int i;
+    printf("Enter number of rows, columns, and non-zero elements: ");
+    scanf("%d %d %d", &M[0][0], &M[0][1], &M[0][2]);  // metadata: rows, columns, non-zero count
+
+    printf("Enter row, column, and value of each non-zero element:\n");
+    for (i = 1; i <= M[0][2]; i++) {
+        scanf("%d %d %d", &M[i][0], &M[i][1], &M[i][2]);  // read each non-zero element
+    }
+}
+
+// Function to print a sparse matrix
+void printSparse(int M[MAX][3]) {
+    int i;
+    printf("Row Col Val\n");
+    for (i = 0; i <= M[0][2]; i++) {
+        printf("%d   %d   %d\n", M[i][0], M[i][1], M[i][2]);  // print each triplet
+    }
+}
+
+// Function to add two sparse matrices
+void addsparse(int A[MAX][3], int B[MAX][3]) {
+    int C[MAX][3];           // Result matrix
+    int i = 1, j = 1, k = 1; // i: pointer for A, j: pointer for B, k: pointer for C
+
+    // Check if matrices have same dimensions
+    if (A[0][0] != B[0][0] || A[0][1] != B[0][1]) {
+        printf("Matrices cannot be added due to different dimensions.\n");
+        return;
+    }
+
+    // Set row and column count in result matrix metadata
+    C[0][0] = A[0][0];
+    C[0][1] = A[0][1];
+
+    // Merge the non-zero elements from A and B
+    while (i <= A[0][2] && j <= B[0][2]) {
+        // If A[i] comes before B[j]
+        if (A[i][0] < B[j][0] || 
+           (A[i][0] == B[j][0] && A[i][1] < B[j][1])) {
+            C[k][0] = A[i][0];
+            C[k][1] = A[i][1];
+            C[k][2] = A[i][2];
+            i++; k++;
+        }
+        // If B[j] comes before A[i]
+        else if (B[j][0] < A[i][0] || 
+                (B[j][0] == A[i][0] && B[j][1] < A[i][1])) {
+            C[k][0] = B[j][0];
+            C[k][1] = B[j][1];
+            C[k][2] = B[j][2];
+            j++; k++;
+        }
+        // If A[i] and B[j] are at same position, add their values
+        else {
+            int sum = A[i][2] + B[j][2]; // add values at same position
+            if (sum != 0) {              // store only if non-zero
+                C[k][0] = A[i][0];
+                C[k][1] = A[i][1];
+                C[k][2] = sum;
+                k++;
+            }
+            i++; j++; // move both pointers
+        }
+    }
+
+    // Copy remaining entries from A (if any)
+    while (i <= A[0][2]) {
+        C[k][0] = A[i][0];
+        C[k][1] = A[i][1];
+        C[k][2] = A[i][2];
+        i++; k++;
+    }
+
+    // Copy remaining entries from B (if any)
+    while (j <= B[0][2]) {
+        C[k][0] = B[j][0];
+        C[k][1] = B[j][1];
+        C[k][2] = B[j][2];
+        j++; k++;
+    }
+
+    // Set non-zero count in metadata
+    C[0][2] = k - 1;
+
+    // Display the result matrix
+    printf("\nResultant Sparse Matrix (A + B):\n");
+    printSparse(C);
+}
+
+// Main function
+int main() {
+    int A[MAX][3], B[MAX][3];  // Declare two sparse matrices
+
+    printf("Enter Matrix A:\n");
+    readSparse(A);             // Read matrix A from user
+
+    printf("Enter Matrix B:\n");
+    readSparse(B);             // Read matrix B from user
+
+    addsparse(A, B);           // Call function to add and print result
+
+    return 0;
+}
